@@ -912,7 +912,7 @@
     wrap.appendChild(el('div', { class: 'head' },
       el('div', null,
         el('h1', { text: 'Säsongen' }),
-        el('p', { class: 'lede', text: 'Matchnumret följer datumet inom varje nivå. Lås en match när den är spelad, så ändras den inte mer.' })),
+        el('p', { class: 'lede', text: 'Lås en match när den är spelad, så ändras den inte mer.' })),
       el('div', { style: 'display:flex;gap:10px;flex-wrap:wrap' },
         state.matches.length ? el('button', { type: 'button', class: 'btn', onclick: clearMatches }, 'Rensa alla matcher') : null,
         el('button', { type: 'button', class: 'btn', onclick: openDemoMatches }, 'Fyll på med exempel'),
@@ -1192,7 +1192,7 @@
           pct('easier', 'Ett steg lättare'), pct('right', 'Rätt nivå'), pct('harder', 'Ett steg svårare')),
         prev,
         el('p', { class: 'note', style: 'margin-top:10px',
-          text: 'Färgerna visar nivå, inte riktning: grönt är Lätt, gult Medel och rött Svår. Saknas en nivå helt fördelas dess andel på de övriga.' }),
+          text: 'Färgerna visar nivå: grönt är Lätt, gult Medel och rött Svår.' }),
         capacityHint() ? el('p', { class: 'note', style: 'margin-top:8px;font-weight:600', text: capacityHint() }) : null)));
 
     // gradering
