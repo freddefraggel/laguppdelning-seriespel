@@ -210,10 +210,10 @@
     return c;
   }
 
-  /* Målandelar per nivå för en spelare, givet vilka serier som finns. */
-  function targetShares(p) {
-    var mo = model(), t = state.settings.targets, g = state.settings.grades;
-    var active = mo.series.map(function (s) { return s.count > 0 && s.perMatch > 0; });
+  /* Målandelar per nivå för en spelare, givet hur många matcher varje nivå har. */
+  function sharesFor(p, counts) {
+    var t = state.settings.targets, g = state.settings.grades;
+    var active = counts.map(function (c, i) { return c > 0 && squad(i + 1) > 0; });
     var lv = active.map(function (a, i) { return a ? i + 1 : 0; }).filter(Boolean);
     if (!lv.length) return [0, 0, 0];
     var eff = Math.min(Math.max(p.level, Math.min.apply(null, lv)), Math.max.apply(null, lv));
@@ -228,6 +228,10 @@
     });
     var sum = w.reduce(function (a, b) { return a + b; }, 0);
     return sum ? w.map(function (x) { return x / sum; }) : [0, 0, 0];
+  }
+
+  function targetShares(p) {
+    return sharesFor(p, model().series.map(function (s) { return s.count; }));
   }
 
   function fairBar(p, h) {
@@ -280,16 +284,15 @@
     return tot ? right / tot : null;
   }
 
-  /* Går målfördelningen att nå med de serier som finns? */
-  function capacityHint() {
-    var mo = model();
-    var cap = mo.series.map(function (s) { return s.count * s.perMatch; });
+  /* Går målfördelningen att nå med ett visst antal matcher per nivå? */
+  function capacityHintFor(counts) {
+    var cap = counts.map(function (c, i) { return c * squad(i + 1); });
     var total = cap.reduce(function (a, b) { return a + b; }, 0);
     if (!total || !state.players.length) return null;
     var fair = total / state.players.length;
     var dem = [0, 0, 0];
     state.players.forEach(function (p) {
-      targetShares(p).forEach(function (s, i) { dem[i] += fair * s; });
+      sharesFor(p, counts).forEach(function (s, i) { dem[i] += fair * s; });
     });
     var msgs = [];
     [0, 1, 2].forEach(function (i) {
@@ -299,7 +302,11 @@
       else if (r > 1.15) msgs.push(LEVELS[i] + ' har färre platser än målet efterfrågar, så den andelen blir mindre');
     });
     if (!msgs.length) return null;
-    return 'Med de serier som finns nu går målet inte att nå exakt: ' + msgs.join(', och ') + '.';
+    return 'Målet går inte att nå exakt: ' + msgs.join(', och ') + '.';
+  }
+
+  function capacityHint() {
+    return capacityHintFor(model().series.map(function (s) { return s.count; }));
   }
 
   function similarity(mo, si, k) {
@@ -378,12 +385,15 @@
 
     if (!state.players.length || !state.matches.length) {
       wrap.appendChild(emptyState(
-        'Börja med truppen och matcherna',
-        'Lägg in spelarna och seriens matcher, så fördelar appen dem åt dig. Vill du bara se hur det ser ut kan du fylla på med ett exempellag.',
+        state.players.length ? 'Inga matcher än' : 'Börja med truppen och matcherna',
+        state.players.length
+          ? 'Truppen är på plats. Lägg in matcherna, eller fyll på med exempelmatcher för att se hur många serien bör ha.'
+          : 'Lägg in spelarna och seriens matcher, så fördelar appen dem åt dig.',
         [
-          el('button', { type: 'button', class: 'btn primary', onclick: function () { view = 'spelare'; render(); } }, 'Lägg till spelare'),
-          el('button', { type: 'button', class: 'btn', onclick: function () { view = 'matcher'; render(); } }, 'Lägg till matcher'),
-          el('button', { type: 'button', class: 'btn', onclick: loadDemo }, 'Fyll med exempel')
+          state.players.length
+            ? el('button', { type: 'button', class: 'btn primary', onclick: openDemoMatches }, 'Fyll på med exempelmatcher')
+            : el('button', { type: 'button', class: 'btn primary', onclick: function () { view = 'spelare'; render(); } }, 'Lägg till spelare'),
+          el('button', { type: 'button', class: 'btn', onclick: function () { view = 'matcher'; render(); } }, 'Till matcherna')
         ]));
       return wrap;
     }
@@ -790,9 +800,9 @@
 
     if (!state.players.length) {
       wrap.appendChild(emptyState('Ingen i truppen än',
-        'Lägg in spelarna en och en, eller fyll på med ett exempellag för att se hur appen fungerar.',
+        'Lägg in spelarna en och en, eller ta in ett exempellag på 20 spelare för att se hur appen fungerar.',
         [el('button', { type: 'button', class: 'btn primary', onclick: addPlayer }, 'Lägg till spelare'),
-         el('button', { type: 'button', class: 'btn', onclick: loadDemo }, 'Fyll med exempel')]));
+         el('button', { type: 'button', class: 'btn', onclick: loadDemoPlayers }, 'Ta in exempeltrupp')]));
       return wrap;
     }
 
@@ -903,13 +913,16 @@
       el('div', null,
         el('h1', { text: 'Säsongen' }),
         el('p', { class: 'lede', text: 'Matchnumret följer datumet inom varje nivå. Lås en match när den är spelad, så ändras den inte mer.' })),
-      el('button', { type: 'button', class: 'btn primary', onclick: addMatch }, 'Lägg till match')));
+      el('div', { style: 'display:flex;gap:10px;flex-wrap:wrap' },
+        state.matches.length ? el('button', { type: 'button', class: 'btn', onclick: clearMatches }, 'Rensa alla matcher') : null,
+        el('button', { type: 'button', class: 'btn', onclick: openDemoMatches }, 'Fyll på med exempel'),
+        el('button', { type: 'button', class: 'btn primary', onclick: addMatch }, 'Lägg till match'))));
 
     if (!state.matches.length) {
       wrap.appendChild(emptyState('Inga matcher än',
-        'Lägg in seriens matcher med nivå och datum. Tid, plats och motståndare kan du fylla i när du får spelschemat.',
-        [el('button', { type: 'button', class: 'btn primary', onclick: addMatch }, 'Lägg till match'),
-         el('button', { type: 'button', class: 'btn', onclick: loadDemo }, 'Fyll med exempel')]));
+        'Lägg in seriens matcher med nivå och datum. Vet du inte hur många serien blir kan du fylla på med exempelmatcher och se vad olika antal gör med speltiden.',
+        [el('button', { type: 'button', class: 'btn primary', onclick: openDemoMatches }, 'Fyll på med exempel'),
+         el('button', { type: 'button', class: 'btn', onclick: addMatch }, 'Lägg till match')]));
       return wrap;
     }
 
@@ -986,6 +999,108 @@
       place: '', opponent: '', locked: false
     });
     change();
+  }
+
+  function clearMatches() {
+    if (!confirm('Ta bort alla ' + state.matches.length + ' matcher och hela schemat? Truppen behålls.')) return;
+    snapshot();
+    state.matches = [];
+    state.picks = {};
+    state.out = {};
+    change();
+    toast('Alla matcher borttagna');
+  }
+
+  /* Lägg till exempelmatcher för att prova olika serieupplägg. */
+  function openDemoMatches() {
+    var have = model().series.map(function (s) { return s.count; });
+    var add = have.some(Boolean) ? [0, 0, 0] : [10, 13, 0];
+    var summary = el('div', { class: 'framed' });
+    var hint = el('p', { class: 'note', style: 'margin:0 0 20px' });
+    var go = el('button', { type: 'button', class: 'btn primary' });
+
+    function paint() {
+      var tot = have.map(function (h, i) { return h + add[i]; });
+      var slots = tot.map(function (c, i) { return c * squad(i + 1); });
+      var all = slots.reduce(function (a, b) { return a + b; }, 0);
+      var n = state.players.length;
+
+      summary.textContent = '';
+      summary.appendChild(el('p', { style: 'margin:0 0 12px;font-size:12.5px;color:#5E6B64',
+        text: n ? 'Så här blir säsongen med ' + n + ' spelare i truppen:' : 'Lägg in truppen för att se vad det ger per spelare.' }));
+      [0, 1, 2].forEach(function (i) {
+        if (!tot[i]) return;
+        summary.appendChild(el('div', { style: 'display:flex;align-items:center;gap:9px;font-size:13.5px;margin-bottom:6px' },
+          el('span', { class: 'chip lv' + (i + 1), text: PREFIX[i] }),
+          el('span', { text: LEVELS[i] + ': ' + tot[i] + ' matcher × ' + squad(i + 1) + ' i truppen = ' + slots[i] + ' platser' })));
+      });
+      if (!all) {
+        summary.appendChild(el('p', { style: 'margin:0;font-size:13.5px', text: 'Inga matcher än.' }));
+      } else {
+        summary.appendChild(el('div', { class: 'stats', style: 'margin:12px 0 0;border:0;padding:12px 0 0;border-top:1px solid #EEF1EB;border-radius:0' },
+          el('div', { class: 'stat' }, el('div', { class: 'k', text: 'Matcher' }), el('div', { class: 'v', text: String(tot[0] + tot[1] + tot[2]) })),
+          el('div', { class: 'stat' }, el('div', { class: 'k', text: 'Platser' }), el('div', { class: 'v', text: String(all) })),
+          el('div', { class: 'stat' }, el('div', { class: 'k', text: 'Per spelare' }), el('div', { class: 'v', text: n ? num(all / n, 1) : '–' }))));
+      }
+
+      var h = capacityHintFor(tot);
+      hint.textContent = h || (all && n ? 'Målfördelningen går att nå med det här upplägget.' : '');
+      hint.style.fontWeight = h ? '600' : '400';
+
+      var k = add[0] + add[1] + add[2];
+      go.textContent = k ? 'Lägg till ' + k + (k === 1 ? ' match' : ' matcher') : 'Lägg till';
+      go.disabled = !k;
+    }
+
+    var fields = el('div', { class: 'fields', style: 'margin-bottom:20px' });
+    [0, 1, 2].forEach(function (i) {
+      fields.appendChild(el('label', { class: 'field' },
+        el('span', { style: 'display:flex;align-items:center;gap:7px' },
+          el('span', { class: 'chip lv' + (i + 1), text: PREFIX[i] }),
+          el('span', { text: LEVELS[i] })),
+        el('input', { type: 'number', min: '0', max: '60', style: 'width:104px',
+          value: String(add[i]), 'aria-label': 'Antal exempelmatcher i ' + LEVELS[i],
+          oninput: function (e) { add[i] = Math.max(0, Math.min(60, Number(e.target.value) || 0)); paint(); } })));
+    });
+
+    go.addEventListener('click', function () {
+      snapshot();
+      addDemoMatches(add);
+      closeModal();
+      change();
+      toast(add[0] + add[1] + add[2] + ' exempelmatcher tillagda');
+    });
+
+    var body = el('div', { class: 'dialog', role: 'dialog', 'aria-modal': 'true', 'aria-label': 'Fyll på med exempelmatcher' },
+      el('h2', { text: 'Fyll på med exempelmatcher' }),
+      el('p', { class: 'lede', style: 'margin-bottom:20px',
+        text: 'Matcherna läggs på lördagar och söndagar från och med nästa helg, utan motståndare och plats. Använd dem för att se hur många matcher varje serie bör ha innan det riktiga spelschemat kommer.' }),
+      fields, summary, hint,
+      el('div', { class: 'actions' },
+        el('span', { style: 'font-size:12.5px;color:#5E6B64', text: 'Befintliga matcher rörs inte' }),
+        el('div', { style: 'display:flex;gap:10px' },
+          el('button', { type: 'button', class: 'btn', onclick: closeModal }, 'Avbryt'), go)));
+
+    paint();
+    openModal(body);
+  }
+
+  function addDemoMatches(counts) {
+    var order = [];
+    var left = counts.slice();
+    while (left[0] + left[1] + left[2] > 0) {
+      for (var i = 0; i < 3; i++) if (left[i] > 0) { order.push(i + 1); left[i]--; }
+    }
+    var last = state.matches.reduce(function (a, m) { return m.date && m.date > a ? m.date : a; }, '');
+    var d = last ? new Date(last + 'T12:00:00') : new Date();
+    if (isNaN(d.getTime())) d = new Date();
+    var step = (6 - d.getDay() + 7) % 7;          // närmaste lördag efter sista matchen
+    d.setDate(d.getDate() + (step || 7));
+    order.forEach(function (lv, i) {
+      var iso = d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0');
+      state.matches.push({ id: uid('m'), level: lv, date: iso, time: '', place: '', opponent: '', locked: false });
+      d.setDate(d.getDate() + (i % 2 === 0 ? 1 : 6));   // lördag, söndag, nästa lördag …
+    });
   }
 
   function removeMatch(mid) {
@@ -1221,35 +1336,20 @@
 
   // ---------------------------------------------------------------- exempel
 
-  function loadDemo() {
+  function loadDemoPlayers() {
+    if (state.players.length && !confirm('Ersätt truppen med ett exempellag på 20 spelare?')) return;
     snapshot();
     var names = ['Alva', 'Elias', 'Maja', 'Hugo', 'Ella', 'William', 'Alice', 'Liam', 'Olivia', 'Noah',
       'Wilma', 'Lucas', 'Astrid', 'Oscar', 'Selma', 'Vincent', 'Freja', 'Leo', 'Signe', 'Adam'];
     var lv = [1, 1, 1, 1, 1, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 3, 3, 3, 3, 3];
-    state.team = state.team || 'Brostorp P9';
+    if (!state.team) state.team = 'Brostorp P9';
     state.players = names.map(function (n, i) {
       return { id: uid('p'), name: n, level: lv[i], harder: 'Ja', easier: 'Ja' };
     });
-    var opp = ['Sälna BK Vit', 'Ekliden FF 2', 'Norrvik IK Blå', 'Hagalund BK 3', 'Vretens IF',
-      'Stensund FF Gul', 'Ösby IK 2', 'Kvarnbacken BK', 'Lindvalla IF 4', 'Tunaberg FF Röd',
-      'Almsta IK', 'Rydbo BK 2', 'Fagerö FF'];
-    var places = ['Brostorps IP, plan 3', 'Brostorps IP, plan 1', 'Norrviks konstgräs',
-      'Hagalunds bollplan', 'Stensunds IP', 'Lindvalla konstgräs'];
-    state.matches = [];
-    state.picks = {}; state.out = {};
-    var d = new Date(2027, 3, 24);
-    for (var i = 0; i < 23; i++) {
-      var medel = i % 2 === 1;
-      var iso = d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0');
-      state.matches.push({
-        id: uid('m'), level: medel ? 2 : 1, date: iso,
-        time: medel ? '11:00' : '10:00',
-        place: places[i % places.length], opponent: opp[i % opp.length], locked: false
-      });
-      d.setDate(d.getDate() + (medel ? 6 : 1));
-    }
+    Object.keys(state.picks).forEach(function (k) { state.picks[k] = []; });
+    Object.keys(state.out).forEach(function (k) { state.out[k] = []; });
     change();
-    toast('Exempellag inlagt. Tryck Generera förslag.');
+    toast('Exempeltrupp inlagd');
   }
 
   // ------------------------------------------------------------------ start

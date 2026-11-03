@@ -21,6 +21,11 @@ där, så länge du är uppkopplad: typsnittet hämtas från Google Fonts.
 
 1. **Matcher** – en rad per match med nivå, datum, tid, plats och motståndare.
    Matchnumret (L1, M3 …) följer datumet inom varje nivå.
+   **Fyll på med exempel** lägger till tomma matcher på helgdatum, så många per
+   nivå som du anger, och visar direkt hur många platser det ger och hur många
+   matcher var och en i truppen då får. Använd det för att prova vilka serier
+   och hur många matcher laget bör anmäla sig till innan spelschemat finns.
+   **Rensa alla matcher** tömmer säsongen men behåller truppen.
 2. **Spelare** – truppen med nivå och hur ofta var och en får flyttas ett steg
    upp eller ner.
 3. **Inställningar** – spelform och avbytare per serie, målfördelningen och hur
