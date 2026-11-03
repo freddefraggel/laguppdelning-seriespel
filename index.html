@@ -1,0 +1,55 @@
+<!doctype html>
+<html lang="sv">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Laguppdelning</title>
+<meta name="description" content="Fördela spelare över seriematcher så att alla spelar lika mycket och får en lagom blandning av nivå.">
+<meta name="color-scheme" content="light">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='%23132A20'/%3E%3Crect x='6' y='7' width='8' height='6' rx='1.5' fill='%2324833A'/%3E%3Crect x='18' y='7' width='8' height='6' rx='1.5' fill='%23F2C21B'/%3E%3Crect x='6' y='19' width='8' height='6' rx='1.5' fill='%23B02020'/%3E%3Crect x='18' y='19' width='8' height='6' rx='1.5' fill='%23EAEFE8'/%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@62..125,100..900&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="app.css">
+</head>
+<body>
+
+<header class="hdr">
+  <div class="hdr-in">
+    <div class="brand">
+      <b>Laguppdelning</b>
+      <label class="visually-hidden" for="teamName">Lagets namn</label>
+      <input id="teamName" type="text" placeholder="Lagets namn">
+    </div>
+    <div class="file">
+      <div class="file-state">
+        <span class="dot" id="fileDot"></span>
+        <div>
+          <div class="file-name" id="fileName">Ingen fil vald</div>
+          <div class="file-sub" id="fileSub">Börja med att öppna eller skapa en</div>
+        </div>
+      </div>
+      <button type="button" class="btn-dark" id="btnOpen">Öppna fil</button>
+      <button type="button" class="btn-dark" id="btnSave">Spara som</button>
+    </div>
+  </div>
+</header>
+
+<main class="main">
+  <nav class="tabs" id="tabs" aria-label="Vyer">
+    <button type="button" data-view="schema" aria-current="page">Schema</button>
+    <button type="button" data-view="spelare">Spelare</button>
+    <button type="button" data-view="matcher">Matcher</button>
+    <button type="button" data-view="installningar">Inställningar</button>
+  </nav>
+  <div id="view"></div>
+</main>
+
+<div id="modal"></div>
+<div id="toast" aria-live="polite"></div>
+
+<script src="plan.js"></script>
+<script src="store.js"></script>
+<script src="app.js"></script>
+</body>
+</html>

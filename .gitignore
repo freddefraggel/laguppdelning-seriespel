@@ -1,0 +1,13 @@
+# Visual Studio
+.vs/
+*.user
+*.suo
+
+# Windows och macOS
+Thumbs.db
+desktop.ini
+.DS_Store
+
+# Om något byggsteg tillkommer senare
+node_modules/
+dist/
