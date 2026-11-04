@@ -985,8 +985,6 @@
 
     panel.appendChild(inner);
     wrap.appendChild(panel);
-    wrap.appendChild(el('p', { class: 'note',
-      text: 'Matcher utan datum hamnar sist. Två matcher samma datum räknas som en krock, och förslaget undviker att sätta samma spelare i båda.' }));
     return wrap;
   }
 
@@ -1118,8 +1116,6 @@
     var mo = model();
     var wrap = el('div');
     wrap.appendChild(el('h1', { text: 'Inställningar' }));
-    wrap.appendChild(el('p', { class: 'lede', style: 'margin-bottom:22px',
-      text: 'Reglerna som förslaget följer. Allt sparas i samma fil som truppen och matcherna.' }));
 
     var panel = el('div', { class: 'panel', style: 'padding:4px 28px 10px' });
 
@@ -1160,7 +1156,7 @@
 
     panel.appendChild(el('div', { class: 'section' },
       el('div', { class: 'side' }, el('h2', { text: 'Serier' }),
-        el('p', { text: 'Matchtruppen är spelare på plan plus avbytare. Den är ett absolut villkor: varje match fylls till exakt det antalet. Antal matcher räknas från fliken Matcher.' })),
+        el('p', { text: 'Matchtruppen är spelare på plan plus avbytare. Varje match fylls till exakt det antalet. Antal matcher räknas från fliken Matcher.' })),
       el('div', { class: 'body scroll' }, tbl)));
 
     // målfördelning
@@ -1185,7 +1181,7 @@
 
     panel.appendChild(el('div', { class: 'section' },
       el('div', { class: 'side' }, el('h2', { text: 'Mål för fördelningen' }),
-        el('p', { text: 'Hur en spelares matcher helst ska ligga. Ingen flyttas mer än ett steg, så en Lätt-spelare spelar aldrig Svår.' })),
+        el('p', { text: 'Hur en spelares matcher helst ska ligga, i %.' })),
       el('div', { class: 'body' },
         el('div', { class: 'fields', style: 'margin-bottom:18px' },
           pct('easier', 'Ett steg lättare'), pct('right', 'Rätt nivå'), pct('harder', 'Ett steg svårare')),
