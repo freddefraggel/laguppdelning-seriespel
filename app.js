@@ -1205,18 +1205,29 @@
       el('div', { class: 'body' }, gfields)));
 
     // likhet
+    var simRows = el('div', { style: 'display:grid;gap:6px;margin-top:16px' });
+    state.settings.series.forEach(function (sr, i) {
+      if (!mo.series[i].count) return;
+      var n = squad(i + 1), m = Math.floor(state.settings.maxShare * n);
+      simRows.appendChild(el('div', { style: 'display:flex;align-items:center;gap:8px;font-size:13.5px' },
+        el('span', { class: 'chip lv' + (i + 1), text: PREFIX[i] }),
+        el('span', null, 'Två ' + LEVELS[i].toLowerCase() + 'matcher får ha högst ',
+          el('strong', { text: m + ' av ' + n }), ' spelare gemensamt.')));
+    });
     panel.appendChild(el('div', { class: 'section' },
-      el('div', { class: 'side' }, el('h2', { text: 'Hur lika matcherna får bli' }),
-        el('p', { text: 'Det mjukaste villkoret. Det ger vika för matchtruppen, nivåreglerna och krockande datum, och du får en varning när det gör det.' })),
+      el('div', { class: 'side' }, el('h2', { text: 'Variation i laguppställningen' }),
+        el('p', { text: 'Gör att det inte blir samma gäng som spelar ihop varje gång. Gränsen gäller mellan två matcher i samma serie.' })),
       el('div', { class: 'body' },
-        el('div', { style: 'display:flex;flex-wrap:wrap;align-items:flex-end;gap:18px' },
-          el('label', { class: 'field' }, el('span', { text: 'Högst samma spelare' }),
-            el('input', { type: 'number', min: '10', max: '100', step: '2.5', style: 'width:110px',
-              value: num(state.settings.maxShare * 100, 1),
+        el('label', { class: 'field' }, el('span', { text: 'Högst andel gemensamma spelare' }),
+          el('span', { style: 'display:flex;align-items:center;gap:8px;color:inherit;font-size:14px;margin:0' },
+            el('input', { type: 'number', min: '10', max: '100', step: '12.5', style: 'width:92px',
+              value: String(Math.round(state.settings.maxShare * 1000) / 10),
               oninput: function (e) { state.settings.maxShare = Math.max(0.1, Number(String(e.target.value).replace(',', '.')) || 0) / 100; Store.touch(); },
-              onchange: function () { snapshot(); render(); } })),
-          el('p', { style: 'margin:0 0 7px;font-size:13.5px',
-            text: 'Med ' + squad(2) + ' i truppen blir det ' + Math.floor(state.settings.maxShare * squad(2)) + ' av ' + squad(2) + '.' })))));
+              onchange: function () { snapshot(); render(); } }),
+            '%')),
+        simRows,
+        el('p', { class: 'note',
+          text: 'Lägre värde ger mer omväxling men är svårare att uppfylla. 62,5 % (5 av 8) brukar fungera bra med runt 20 spelare. Om gränsen inte går att hålla utan att truppen blir för liten, nivåreglerna bryts eller någon får två matcher samma dag, släpps den för den matchen och raden "Lik tidigare match" i Schema blir röd.' }))));
 
     // filen
     var st = Store.status();
