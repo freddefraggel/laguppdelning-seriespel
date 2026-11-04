@@ -800,8 +800,9 @@
     if (!state.players.length) {
       wrap.appendChild(emptyState('Ingen i truppen än',
         'Lägg in spelarna en och en, eller ta in ett exempellag på 20 spelare för att se hur appen fungerar.',
-        [el('button', { type: 'button', class: 'btn primary', onclick: addPlayer }, 'Lägg till spelare'),
-         el('button', { type: 'button', class: 'btn', onclick: loadDemoPlayers }, 'Skapa en exempeltrupp')]));
+          [el('button', { type: 'button', class: 'btn', onclick: loadDemoPlayers }, 'Skapa en exempeltrupp'),
+              el('button', { type: 'button', class: 'btn primary', onclick: addPlayer }, 'Lägg till spelare')
+         ]));
       return wrap;
     }
 
@@ -918,9 +919,9 @@
 
     if (!state.matches.length) {
       wrap.appendChild(emptyState('Inga matcher än',
-        'Lägg in seriens matcher med nivå och datum. Vet du inte hur många serien blir kan du fylla på med exempelmatcher och se vad olika antal gör med speltiden.',
-        [el('button', { type: 'button', class: 'btn primary', onclick: openDemoMatches }, 'Fyll på med exempel'),
-         el('button', { type: 'button', class: 'btn', onclick: addMatch }, 'Lägg till match')]));
+        'Lägg in seriens matcher med nivå och datum.',
+        [el('button', { type: 'button', class: 'btn', onclick: openDemoMatches }, 'Fyll på med exempel'),
+            el('button', { type: 'button', class: 'btn primary', onclick: addMatch }, 'Lägg till match')]));
       return wrap;
     }
 
