@@ -377,7 +377,7 @@
 
     wrap.appendChild(el('div', { class: 'head' },
       el('div', null,
-        el('h1', { text: 'Vem spelar vad' }),
+        el('h1', { text: 'Serieschema' }),
         el('p', { class: 'lede', text: schemaLede(mo) })),
       el('div', { style: 'display:flex;gap:10px;flex-wrap:wrap' },
         el('button', { type: 'button', class: 'btn', onclick: clearOpen }, 'Rensa olåsta'),
@@ -388,7 +388,7 @@
         state.players.length ? 'Inga matcher än' : 'Börja med truppen och matcherna',
         state.players.length
           ? 'Truppen är på plats. Lägg in matcherna, eller fyll på med exempelmatcher för att se hur många serien bör ha.'
-          : 'Lägg in spelarna och seriens matcher, så fördelar appen dem åt dig.',
+          : 'Lägg in spelarna och seriens matcher.',
         [
           state.players.length
             ? el('button', { type: 'button', class: 'btn primary', onclick: openDemoMatches }, 'Fyll på med exempelmatcher')
@@ -794,15 +794,14 @@
     var wrap = el('div');
     wrap.appendChild(el('div', { class: 'head' },
       el('div', null,
-        el('h1', { text: 'Truppen' }),
-        el('p', { class: 'lede', text: 'Nivån avgör vilken serie som är rätt. Graderingen avgör hur ofta spelaren flyttas ett steg upp eller ner. Ingen flyttas mer än ett steg.' })),
+        el('h1', { text: 'Spelare' }),),
       el('button', { type: 'button', class: 'btn primary', onclick: addPlayer }, 'Lägg till spelare')));
 
     if (!state.players.length) {
       wrap.appendChild(emptyState('Ingen i truppen än',
         'Lägg in spelarna en och en, eller ta in ett exempellag på 20 spelare för att se hur appen fungerar.',
         [el('button', { type: 'button', class: 'btn primary', onclick: addPlayer }, 'Lägg till spelare'),
-         el('button', { type: 'button', class: 'btn', onclick: loadDemoPlayers }, 'Ta in exempeltrupp')]));
+         el('button', { type: 'button', class: 'btn', onclick: loadDemoPlayers }, 'Skapa en exempeltrupp')]));
       return wrap;
     }
 
