@@ -464,7 +464,7 @@
         type: 'button', class: 'icon-btn', style: 'width:20px;height:18px',
         'aria-pressed': mt.locked ? 'true' : 'false',
         'aria-label': (mt.locked ? 'Lås upp ' : 'Lås ') + mo.labelOf[mt.id],
-        title: mt.locked ? 'Låst. Klicka för att låsa upp.' : 'Lås matchen',
+        title: mt.locked ? 'Låst, så den ändras inte mer. Klicka för att låsa upp.' : 'Lås en match när den är spelad, så ändras den inte mer.',
         onclick: function () { snapshot(); mt.locked = !mt.locked; change(); }
       }, icon(mt.locked ? I.lock : I.unlock, 11, mt.locked ? '#132A20' : '#AAB4A9', 2.4));
       head.appendChild(el('div', { class: 'mcol' },
@@ -911,8 +911,7 @@
     var wrap = el('div');
     wrap.appendChild(el('div', { class: 'head' },
       el('div', null,
-        el('h1', { text: 'Säsongen' }),
-        el('p', { class: 'lede', text: 'Lås en match när den är spelad, så ändras den inte mer.' })),
+        el('h1', { text: 'Säsongen' })),
       el('div', { style: 'display:flex;gap:10px;flex-wrap:wrap' },
         state.matches.length ? el('button', { type: 'button', class: 'btn', onclick: clearMatches }, 'Rensa alla matcher') : null,
         el('button', { type: 'button', class: 'btn', onclick: openDemoMatches }, 'Fyll på med exempel'),
@@ -973,6 +972,7 @@
         el('span', { style: 'width:100px;flex:none;display:flex;justify-content:flex-end' },
           el('button', {
             type: 'button', class: 'btn small', 'aria-pressed': mt.locked ? 'true' : 'false',
+            title: mt.locked ? 'Låst, så den ändras inte mer. Klicka för att låsa upp.' : 'Lås en match när den är spelad, så ändras den inte mer.',
             style: mt.locked ? 'background:#132A20;border-color:#132A20;color:#fff;font-weight:700' : '',
             onclick: function () { snapshot(); mt.locked = !mt.locked; change(); }
           }, mt.locked ? 'Låst' : 'Lås')),
